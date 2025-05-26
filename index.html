@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuroLust - Talk to Nyra</title>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    .companion {
+      width: 250px;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 15px rgba(255, 0, 128, 0.4);
+    }
+    .chatbox {
+      width: 90%;
+      max-width: 500px;
+      margin-top: 2rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+    }
+    input {
+      background-color: #1a1a1a;
+      color: #fff;
+    }
+    button {
+      background-color: #e60073;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff3385;
+    }
+    .response {
+      margin-top: 2rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>NeuroLust</h1>
+  <h2>Talk to <span style="color:#ff66b2;">Nyra</span></h2>
+  <img src="https://i.imgur.com/DqUeR4O.png" alt="Nyra" class="companion" />
+
+  <div class="chatbox">
+    <input type="text" id="userInput" placeholder="What would you like Nyra to say?"/>
+    <button onclick="talkToNyra()">Send</button>
+    <div class="response" id="responseText"></div>
+    <audio id="nyraAudio" controls style="margin-top: 1rem;"></audio>
+  </div>
+
+  <script>
+    async function talkToNyra() {
+      const input = document.getElementById("userInput").value;
+      document.getElementById("responseText").innerText = "Nyra is thinking...";
+
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_OPENAI_API_KEY'
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [
+            { role: "system", content: "You are Nyra, a seductive but ethical AI companion. Keep all interactions adult, safe, and romantic. Never engage in anything involving minors." },
+            { role: "user", content: input }
+          ]
+        })
+      });
+
+      const openaiData = await openaiResponse.json();
+      const nyraText = openaiData.choices[0].message.content;
+      document.getElementById("responseText").innerText = nyraText;
+
+      const elevenResponse = await fetch("https://api.elevenlabs.io/v1/text-to-speech/Nb5v1CCHUU5ZTyBo4OyL/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "xi-api-key": "sk_e0b4929801ac99fbcb64a80d05df910ea302b84544014c1d"
+        },
+        body: JSON.stringify({
+          text: nyraText,
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+        })
+      });
+
+      const blob = await elevenResponse.blob();
+      const audioURL = URL.createObjectURL(blob);
+      const audioElement = document.getElementById("nyraAudio");
+      audioElement.src = audioURL;
+      audioElement.play();
+    }
+  </script>
+</body>
+</html>
